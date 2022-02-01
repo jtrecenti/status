@@ -1,0 +1,22 @@
+Package: status
+Title: Github Actions Status
+Version: 0.0.0.9000
+Authors@R: 
+    person("Julio", "Trecenti", , "julio.trecenti@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1680-6389"))
+Description: Retrieves github statuses from my repos.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Imports: 
+    dplyr,
+    gh,
+    magrittr,
+    memoise,
+    glue,
+    purrr,
+    readr,
+    rmarkdown,
+    tibble,
+    tidyr
