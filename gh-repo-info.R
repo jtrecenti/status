@@ -20,8 +20,11 @@
 #'
 #' @export
 gh_workflows <- memoise::memoise(function(owner, repo, ...) {
-  gh::gh("/repos/{owner}/{repo}/actions/workflows", owner = owner, repo = repo, private = TRUE) %>%
-    .$workflows
+  gh::gh(
+    "/repos/{owner}/{repo}/actions/workflows",
+    owner = owner, repo = repo,
+    private = TRUE
+  )$workflows
 }, cache =  memoise::cache_memory())
 
 #' gh_runs
@@ -67,22 +70,22 @@ gh_url <- memoise::memoise(function(url) {
 #'
 #' @export
 gh_get_repo_status <- function(repos) {
-  repos <- purrr::map_dfr(repos, ~ tibble::tibble(repo = .), .id = "owner")
+  repos <- purrr::map_dfr(repos, \(x) tibble::tibble(repo = x), .id = "owner")
 
-  repos$workflows <- repos %>% purrr::pmap(gh_workflows)
-  repos <- repos %>%
-    tidyr::unnest(workflows) %>%
+  repos$workflows <- repos |> purrr::pmap(gh_workflows)
+  repos <- repos |>
+    tidyr::unnest(workflows) |>
     dplyr::mutate(
       workflow_id = purrr::map_chr(workflows, "id"),
       badge_url = purrr::map_chr(workflows, "badge_url")
     )
 
   repos$runs <- purrr::pmap(repos, gh_runs)
-  repos <- repos %>%
+  repos <- repos |>
     dplyr::mutate(
       html_url_run = purrr::map_chr(runs, "html_url"),
       run_conclusion = purrr::map_chr(runs, "conclusion"),
-      commit_message = purrr::map_chr(runs, ~ .x$head_commit$message),
+      commit_message = purrr::map_chr(runs, \(x) x$head_commit$message),
       commit_id = purrr::map_chr(runs, `[[`, c("head_commit", "id")),
       repo_name = purrr::map_chr(runs, `[[`, c("head_repository", "full_name")),
       html_url_repo = purrr::map_chr(runs, `[[`, c("head_repository", "html_url")),
@@ -94,9 +97,9 @@ gh_get_repo_status <- function(repos) {
       open_issues_count = purrr::map_dbl(.repo, "open_issues_count")
     )
 
-  repos %>%
-    dplyr::select(-where(is.list)) %>%
-    dplyr::arrange(repo_name) %>%
+  repos |>
+    dplyr::select(-where(is.list)) |>
+    dplyr::arrange(repo_name) |>
     readr::write_csv("repos.csv")
 
   repos
